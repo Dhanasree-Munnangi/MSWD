@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 
-const Button = ({ handleClick, text }) => {
+const Button = ({ hadClick, text }) => {
   return (
-    <button onClick={handleClick}>
+    <button onClick={hadClick}>
       {text}
     </button>
   )
@@ -42,13 +42,13 @@ const App = () => {
   const [Neutral, setNeutral] = useState(0)
   const [Unsatisfied, setUnsatisfied] = useState(0)
 
-  const handleSatisfiedClick = () =>
+  const hasatisClick = () =>
     setSatisfied(Satisfied + 1)
 
-  const handleNeutralClick = () =>
+  const haneuClick = () =>
     setNeutral(Neutral + 1)
 
-  const handleUnsatisfiedClick = () =>
+  const haunsaClick = () =>
     setUnsatisfied(Unsatisfied + 1)
 
     const all = Satisfied + Neutral + Unsatisfied
@@ -59,9 +59,9 @@ const App = () => {
   return (
     <>
       <h1>give feedback</h1>
-      <Button handleClick={handleSatisfiedClick} text="Satisfied" />
-      <Button handleClick={handleNeutralClick} text="Neutral" />
-      <Button handleClick={handleUnsatisfiedClick} text="Unsatisfied" />
+      <Button hadClick={hasatisClick} text="Satisfied" />
+      <Button hadClick={haneuClick} text="Neutral" />
+      <Button hadClick={haunsaClick} text="Unsatisfied" />
       <h1>statistics</h1>
       <Statistics Satisfied={Satisfied} Neutral={Neutral} Unsatisfied={Unsatisfied} all={all} average={average} positive={positive} />
     </>
