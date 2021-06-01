@@ -60,7 +60,7 @@ const display=persons.filter((filtered)=>{
     {
       return persons
     }
-    else if(filtered.content.toLowerCase().includes(filter.toLowerCase()))  {
+    else if(filtered.name.toLowerCase().includes(filter.toLowerCase()))  {
         return filtered
     }
     else{
