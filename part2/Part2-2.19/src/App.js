@@ -67,7 +67,7 @@ const addDetails=(event)=>{
   setPersons(persons.concat(response))
   setNewName('')
   setNewNumber('')
-  setMessage(`${person.name} was added!`);
+  setMessage(`${newName} was added!`);
   setTimeout(() => setMessage(null), 9000);
    })
 }
