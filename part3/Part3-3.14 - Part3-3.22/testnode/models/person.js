@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const url = `mongodb+srv://fullstack:Yaggudhana3*@cluster0.ryz57.mongodb.net/Phonebook?retryWrites=true&w=majority`
+const url = `mongodb+srv://fullstack:Password@cluster0.ryz57.mongodb.net/Phonebook?retryWrites=true&w=majority`
 
 console.log('connecting to', url)
 mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true })
