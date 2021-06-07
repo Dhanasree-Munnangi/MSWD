@@ -90,18 +90,7 @@ const unknownEndpoint = (req, res) => {
 }
 app.use(unknownEndpoint)
 
-const errorHandler = (error, req, res, next) => {
-  console.error('Error:', error.message)
 
-  if (error.name === 'CastError' && error.kind === 'ObjectId') {
-    return res.status(400).json({ error: 'malformatted id' })
-  } else if (error.name === 'ValidationError') {
-    return res.status(400).json({ error: error.message })
-  }
-
-  next(error)
-}
-app.use(errorHandler)
 
 const PORT=3001
 app.listen(PORT, () => {
