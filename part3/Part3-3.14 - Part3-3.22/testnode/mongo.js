@@ -10,7 +10,7 @@ if (!password) {
 }
 
 const url =
-`mongodb+srv://fullstack:Yaggudhana3*@cluster0.ryz57.mongodb.net/Phonebook?retryWrites=true&w=majority`
+`mongodb+srv://fullstack:Password@cluster0.ryz57.mongodb.net/Phonebook?retryWrites=true&w=majority`
 
 
 mongoose.connect(url, { useNewUrlParser: true })
