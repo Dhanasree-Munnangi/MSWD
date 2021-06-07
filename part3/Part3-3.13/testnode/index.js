@@ -1,125 +1,109 @@
-const express=require('express')
-const morgan = require('morgan')
-const app=express()
+require('dotenv').config()
+const express = require('express')
+const bodyParser = require('body-parser')
 const cors = require('cors')
+const morgan = require('morgan')
+
+const app = express()
 const Person = require('./models/person')
-app.use(express.static('build'))
+const port = process.env.PORT
+
+app.use(bodyParser.json())
 app.use(cors())
-app.use(express.json())
-morgan.token('body', (req, res) => JSON.stringify(req.body));
-app.use(morgan(':method :url :status :response-time ms - :res[content-length] :body'));
 
+morgan.token('body', (req) => JSON.stringify(req.body))
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
-app.get('/persons',(request,response)=>{
-    response.json(persons)
+app.use(express.static('build'))
+
+app.get('/info', (req, res) => {
+  Person.find({})
+    .then(people => people ? people.length : 0)
+    .then(entr => {
+      const cT = new Date()
+      const tx = `
+        <p>Phonebook has info for ${entr} people</p>
+        <p>${cT}</p>
+      `
+      res.send(tx)
+    })
 })
 
-app.get('/info',(request,response)=>{
-  const date=new Date()
-  response.send(`<p>PhoneBook has info for ${persons.length} people</p>
-                  <p>${date}</p>`)
-})
-app.get('/persons/:id',(request,response)=>{
-  const id=Number(request.params.id)
-  const person=persons.find(person=>person.id===id)
-  if(person)
-  response.json(person)
-  else
-  response.status(404).send(`<h1>${response.statusCode} The requested resource was not found.</h1>`)
-})
-app.delete('/persons/:id',(request,response)=>{
-  const id=Number(request.params.id)
-  const pn=persons.length
-  const pep=persons.filter(person=>person.id!==id)
-  if(pep.length===pn-1)
-  response.status(204).json(pep) 
-})
-
-app.put('/persons/:id',(request,response)=>{
-  if(persons.find(person=>person.content===request.body.content)){
-    const personfind = persons.find((person) => person.content.toLowerCase().includes(request.body.content.toLowerCase()))
-    const newObject={
-      ...personfind,
-      "number":request.body.number
-    }
-   persons.concat(newObject)
-   response.status(200).json(newObject)
-  }
-})
-
-app.post('/persons' , (request,response) => {
-  const body = request.body
-  if(!body.content){
-    response.status(400).send({ error: `${response.statusCode} <br/>name is missing` })
-  }
-  else if(!body.number){
-    response.status(400).send({ error: `${response.statusCode} <br/>number is missing` })
-  }
-  else if(persons.find(person=>person.content===body.content)){
-    response.status(409).send({ error: `${response.statusCode} <br/>name must be unique` })
-  }    
-  else if(body.content&&body.number)
-  {
-    body.id = Math.floor(Math.random() *9999999)
-    const person={
-      "content":body.content,
-      "number":body.number,
-      "id":body.id
-    }
-    persons.concat(person)
-    response.status(200).json(person)
-  }
-  else
-  {
-  return response.status(500).end();
-}
-
-})
-
-app.get('/personss', (request, response) => {
-  Person.find({}).then(persons => {
-    response.json(persons)
+app.get('/persons', (req, res) => {
+  Person.find({}).then(people => {
+    res.json(people)
   })
 })
 
-app.get('/personss/:id', (request, response) => {
-  Person.findById(request.params.id).then(persons => {
-    response.json(persons)
-  })
+app.get('/persons/:id', (req, res, next) => {
+  Person.findById(req.params.id)
+    .then(person => {
+      person ? res.json(person) : res.status(404).end()
+    })
+    .catch(error => next(error))
 })
 
-app.post('/personss', (request, response) => {
-  const body = request.body
-  .then(result => {
-    console.log('connected to ')
-  })
-  .catch((error) => {
-    console.log('error connecting to MongoDB:', error.message)
-  })
+app.delete('/persons/:id', (req, res, next) => {
+  Person.findByIdAndRemove(req.params.id)
+    .then(perremove => {
+      perremove ? res.status(204).end() : res.status(404).end()
+    })
+    .catch(error => next(error))
+})
 
-  if (body.content === undefined) {
-    return response.status(400).json({ error: 'content missing' })
+app.post('/persons/', (req, res, next) => {
+  const { name, number } = req.body
+
+  if (!name || !number) {
+    return res.status(400).json({ error: 'missing name or number' })
   }
 
   const person = new Person({
-    title: body.title,
-    content: body.content,
-    
+    name,
+    number
   })
 
-  person.save().then(savedPerson => {
-    response.json(savedPerson)
-  })
+  person.save()
+    .then(savedPerson => {
+      res.json(savedPerson)
+    })
+    .catch(error => next(error))
 })
 
+app.put('/persons/:id', (req, res, next) => {
+  const { name, number } = req.body
 
-const PORT = 3001
-app.listen(PORT, () => {
-console.log(`Server running on port ${PORT}`)
+  const person = {
+    name,
+    number
+  }
+
+  Person.findByIdAndUpdate(req.params.id, person, { new: true })
+    .then(updaper => {
+      res.json(updaper)
+    })
+    .catch(error => next(error))
+})
+
+const unknownEndpoint = (req, res) => {
+  res.status(404).json({ error: 'requested resource cannot be found' })
 }
+app.use(unknownEndpoint)
 
-)
+const errorHandler = (error, req, res, next) => {
+  console.error('Error:', error.message)
 
+  if (error.name === 'CastError' && error.kind === 'ObjectId') {
+    return res.status(400).json({ error: 'malformatted id' })
+  } else if (error.name === 'ValidationError') {
+    return res.status(400).json({ error: error.message })
+  }
 
+  next(error)
+}
+app.use(errorHandler)
 
-  
+const PORT=3001
+app.listen(PORT, () => {
+  console.log(`Phonebook backend running on port ${PORT}`)
+})
